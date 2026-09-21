@@ -1,0 +1,88 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_videoplaylist/view
+
+    Example context (json):
+    {
+        Aqui tem que criar o context em inglês
+    }
+}}
+<div class="mod-videoplaylist" data-region="videoplaylist">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div><h2>{{name}}</h2>{{{intro}}}</div>
+        <div>{{#canmanage}}<a class="btn btn-secondary" href="{{{manageurl}}}">{{#str}}
+            managevideos, videoplaylist{{/str}}</a>{{/canmanage}}
+            {{#canreport}}<a class="btn btn-secondary" href="{{{reporturl}}}">{{#str}}
+                viewreport, videoplaylist{{/str}}</a>{{/canreport}}</div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between"><strong>{{#str}}
+                overallprogress, videoplaylist{{/str}}</strong><span data-region="overall-percent">{{overallpercent}}
+                %</span></div>
+            <div class="progress" role="progressbar">
+                <div class="progress-bar" data-region="overall-bar" style="width: {{overallpercent}}%"></div>
+            </div>
+        </div>
+    </div>
+    {{^hasvideos}}
+        <div class="alert alert-info">{{#str}}novideos, videoplaylist{{/str}}</div>{{/hasvideos}}
+    {{#hasvideos}}
+        <div class="row g-3">
+            <div class="col-lg-4">
+                <div class="list-group">
+                    {{#videos}}
+                        <a class="list-group-item list-group-item-action {{#current}}active{{/current}} {{#locked}}disabled{{/locked}}"
+                           {{#unlocked}}href="{{{url}}}"{{/unlocked}} data-video-list-id="{{id}}">
+                            <div class="d-flex justify-content-between"><span>{{title}}</span><span>{{percent}}%</span>
+                            </div>
+                            <div class="progress mt-2" style="height: 5px">
+                                <div class="progress-bar" data-video-bar="{{id}}" style="width: {{percent}}%"></div>
+                            </div>
+                            <small>{{#completed}}{{#str}}
+                                statuscompleted, videoplaylist{{/str}}{{/completed}}{{#locked}}{{#str}}
+                                statuslocked, videoplaylist{{/str}}{{/locked}}{{#notstarted}}{{^locked}}{{#str}}
+                                statusnotstarted, videoplaylist{{/str}}{{/locked}}{{/notstarted}}</small>
+                        </a>{{/videos}}
+                </div>
+            </div>
+            <div class="col-lg-8">
+                {{#current}}
+                    <div class="card">
+                        <div class="card-body"><h3>{{title}}</h3>
+                            <p>{{description}}</p>
+                            <div class="videoplaylist-player" data-cmid="{{cmid}}" data-videoid="{{id}}"
+                                 data-source="{{source}}" data-src="{{{src}}}" data-lastposition="{{lastposition}}"
+                                 data-percent="{{percent}}" data-segments='{{segments}}' data-allowseek="{{allowseek}}">
+                                <div data-region="player"></div>
+                                <div class="mt-2">
+                                    <div class="d-flex justify-content-between"><span>{{#str}}
+                                        videoprogress, videoplaylist{{/str}}</span><span
+                                            data-region="video-percent">{{percent}}%</span></div>
+                                    <div class="progress">
+                                        <div class="progress-bar" data-region="video-bar"
+                                             style="width: {{percent}}%"></div>
+                                    </div>
+                                    <div class="videoplaylist-timeline mt-1" data-region="timeline"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>{{/current}}
+            </div>
+        </div>{{/hasvideos}}
+</div>

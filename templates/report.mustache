@@ -1,0 +1,48 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_videoplaylist/report
+
+    Example context (json):
+    {
+        Aqui tem que criar o context em inglês
+    }
+}}
+<div>
+    <div class="d-flex justify-content-between align-items-center mb-3"><h2>{{#str}}
+        reporttitle, videoplaylist{{/str}} — {{name}}</h2><a class="btn btn-secondary" href="{{{backurl}}}">{{#str}}
+        back, videoplaylist{{/str}}</a></div>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead>
+            <tr>
+                <th>{{#str}}student, videoplaylist{{/str}}</th>{{#videos}}
+                <th>{{title}}<br><small>≥ {{minpercent}}%</small></th>{{/videos}}
+                <th>{{#str}}overallprogress, videoplaylist{{/str}}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{#students}}
+                <tr>
+                    <td>{{fullname}}<br><small>{{email}}</small></td>{{#videos}}
+                    <td>{{percent}}% {{#completed}}✓{{/completed}}</td>{{/videos}}
+                    <td><strong>{{overall}}%</strong></td>
+                </tr>{{/students}}
+            </tbody>
+        </table>
+    </div>
+</div>
