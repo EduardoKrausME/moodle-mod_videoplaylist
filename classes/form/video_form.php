@@ -55,7 +55,7 @@ class video_form extends \moodleform {
         $mform->setType('sourceurl', PARAM_URL);
         $mform->hideIf('sourceurl', 'source', 'eq', 'upload');
         $mform->addElement('filemanager', 'videofile', get_string('videofile', 'videoplaylist'), null, [
-            'subdirs' => 0, 'maxfiles' => 1, 'accepted_types' => ['video'],
+            'subdirs' => 0, 'accepted_types' => ['video'],
         ]);
         $mform->hideIf('videofile', 'source', 'neq', 'upload');
         $mform->addElement('text', 'minpercent', get_string('minpercent', 'videoplaylist'), ['size' => 5]);
@@ -83,6 +83,15 @@ class video_form extends \moodleform {
         }
         if (!empty($data['sourceurl']) && !in_array(parse_url($data['sourceurl'], PHP_URL_SCHEME), ['http', 'https'], true)) {
             $errors['sourceurl'] = get_string('invalidurl', 'videoplaylist');
+        }
+        foreach (['videofile'] as $field) {
+            $draftid = (int)($data[$field] ?? 0);
+            if ($draftid > 0) {
+                $draftinfo = file_get_draft_area_info($draftid);
+                if ((int)$draftinfo['filecount'] > 1) {
+                    $errors[$field] = get_string('errormaxfiles', 'videoplaylist');
+                }
+            }
         }
         return $errors;
     }

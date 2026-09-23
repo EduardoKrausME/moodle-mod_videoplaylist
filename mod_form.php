@@ -42,7 +42,7 @@ class mod_videoplaylist_mod_form extends moodleform_mod {
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
         $this->standard_intro_elements();
-        $mform->addElement('header', 'playlistsettings', get_string('playlistsettings', 'videoplaylist'));
+        $mform->addElement('html', '<h3>' . get_string('playlistsettings', 'videoplaylist') . '</h3>');
         $mform->addElement('selectyesno', 'sequential', get_string('sequential', 'videoplaylist'));
         $mform->setDefault('sequential', 0);
         $mform->addElement('selectyesno', 'allowseek', get_string('allowseek', 'videoplaylist'));
