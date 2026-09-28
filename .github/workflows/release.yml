@@ -71,7 +71,7 @@ jobs:
       ubuntu-latest
 
     env:
-      PLUGIN: local_alternative_file_system
+      PLUGIN: mod_videoplaylist
       CURL: curl -s
       ENDPOINT: https://moodle.org/webservice/rest/server.php
       TOKEN: ${{ secrets.MOODLE_ORG_TOKEN }}
