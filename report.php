@@ -38,7 +38,7 @@ $PAGE->set_title(get_string('reporttitle', 'videoplaylist'));
 $PAGE->set_heading(format_string($course->fullname));
 $manager = new progress_manager();
 $videos = $manager->get_videos($playlist->id);
-$identityfields = \\core_user\\fields::get_identity_fields($context, false);
+$identityfields = \core_user\fields::get_identity_fields($context, false);
 $userfields = array_values(array_unique(array_merge(['id', 'firstname', 'lastname'], $identityfields)));
 $userfieldsql = implode(',', array_map(static fn(string $field): string => 'u.' . $field, $userfields));
 $students = get_enrolled_users($context, 'mod/videoplaylist:view', 0,
@@ -60,7 +60,7 @@ foreach ($students as $student) {
             continue;
         }
         $identity[] = [
-            'label' => \\core_user\\fields::get_display_name($field),
+            'label' => \core_user\fields::get_display_name($field),
             'value' => format_string((string)$student->{$field}),
         ];
     }
