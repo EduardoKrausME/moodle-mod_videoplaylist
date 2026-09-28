@@ -94,6 +94,7 @@ class restore_videoplaylist_activity_structure_step extends restore_activity_str
      * @return void Return value.
      */
     protected function after_execute(): void {
+        $this->add_related_files('mod_videoplaylist', 'intro', null);
         $this->add_related_files('mod_videoplaylist', 'video', 'videoplaylist_video');
     }
 }
