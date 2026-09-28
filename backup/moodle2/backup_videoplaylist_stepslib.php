@@ -57,6 +57,7 @@ class backup_videoplaylist_activity_structure_step extends backup_activity_struc
             $progress->set_source_table('videoplaylist_progress', ['playlistid' => backup::VAR_ACTIVITYID]);
         }
         $progress->annotate_ids('user', 'userid');
+        $activity->annotate_files('mod_videoplaylist', 'intro', null);
         $video->annotate_files('mod_videoplaylist', 'video', 'id');
         return $this->prepare_activity_structure($activity);
     }
