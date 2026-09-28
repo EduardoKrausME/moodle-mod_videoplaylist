@@ -115,7 +115,7 @@ function videoplaylist_get_file_areas($course, $cm, $context): array {
     return ['video' => get_string('videofile', 'videoplaylist')];
 }
 
-function videoplaylist_grade_item_update(stdClass $playlist, ?array $grades = null): int {
+function videoplaylist_grade_item_update(stdClass $playlist, $grades = null): int {
     global $CFG;
     require_once($CFG->libdir . '/gradelib.php');
     $item = [
@@ -124,6 +124,10 @@ function videoplaylist_grade_item_update(stdClass $playlist, ?array $grades = nu
         'grademin' => 0,
         'grademax' => 100,
     ];
+    if ($grades === 'reset') {
+        $item['reset'] = true;
+        $grades = null;
+    }
     return grade_update('mod/videoplaylist', $playlist->course, 'mod', 'videoplaylist', $playlist->id, 0, $grades, $item);
 }
 
@@ -169,17 +173,99 @@ function videoplaylist_get_coursemodule_info(stdClass $cm): cached_cm_info|null 
     return $info;
 }
 
-function videoplaylist_get_completion_active_rule_descriptions(cached_cm_info $cm): array {
-    if ((int)$cm->completion !== COMPLETION_TRACKING_AUTOMATIC ||
-        empty($cm->customdata['customcompletionrules']['completionpercent'])) {
+function videoplaylist_get_completion_active_rule_descriptions($cm): array {
+    global $DB;
+
+    if ((int)$cm->completion !== COMPLETION_TRACKING_AUTOMATIC) {
         return [];
     }
-    return [get_string('completiondetail:percent', 'videoplaylist',
-        $cm->customdata['customcompletionrules']['completionpercent'])];
+
+    $completionpercent = $cm->customdata['customcompletionrules']['completionpercent'] ?? null;
+    if ($completionpercent === null && !empty($cm->instance)) {
+        $completionpercent = $DB->get_field('videoplaylist', 'completionpercent', ['id' => $cm->instance]);
+    }
+    if (empty($completionpercent)) {
+        return [];
+    }
+
+    return [get_string('completiondetail:percent', 'videoplaylist', $completionpercent)];
 }
 
 function videoplaylist_get_completion_state($course, $cm, int $userid, bool $type): bool {
     global $DB;
     $playlist = $DB->get_record('videoplaylist', ['id' => $cm->instance], '*', MUST_EXIST);
     return (new progress_manager())->get_overall_percent($playlist->id, $userid) >= (float)$playlist->completionpercent;
+}
+
+/**
+ * Add Video Playlist options to the course reset form.
+ *
+ * @param MoodleQuickForm $mform Reset form.
+ * @return void
+ */
+function videoplaylist_reset_course_form_definition(&$mform): void {
+    $mform->addElement('header', 'videoplaylistheader', get_string('modulenameplural', 'videoplaylist'));
+    $mform->addElement('static', 'videoplaylistdelete', get_string('delete'));
+    $mform->addElement('advcheckbox', 'reset_videoplaylist_progress', get_string('resetprogress', 'videoplaylist'));
+}
+
+/**
+ * Default values for the course reset form.
+ *
+ * @param stdClass $course Course record.
+ * @return array
+ */
+function videoplaylist_reset_course_form_defaults(stdClass $course): array {
+    return ['reset_videoplaylist_progress' => 1];
+}
+
+/**
+ * Reset learner data for all Video Playlist activities in a course.
+ *
+ * @param stdClass $data Course reset data.
+ * @return array Reset status.
+ */
+function videoplaylist_reset_userdata(stdClass $data): array {
+    global $DB;
+
+    if (empty($data->reset_videoplaylist_progress)) {
+        return [];
+    }
+
+    $playlistids = $DB->get_fieldset_select(
+        'videoplaylist',
+        'id',
+        'course = :courseid',
+        ['courseid' => $data->courseid]
+    );
+
+    if ($playlistids) {
+        $DB->delete_records_list('videoplaylist_sessions', 'playlistid', $playlistids);
+        $DB->delete_records_list('videoplaylist_progress', 'playlistid', $playlistids);
+    }
+
+    if (empty($data->reset_gradebook_grades)) {
+        videoplaylist_reset_gradebook($data->courseid);
+    }
+
+    return [[
+        'component' => get_string('modulenameplural', 'videoplaylist'),
+        'item' => get_string('resetprogress', 'videoplaylist'),
+        'error' => false,
+    ]];
+}
+
+/**
+ * Remove all Video Playlist grades from the gradebook for a course.
+ *
+ * @param int $courseid Course ID.
+ * @return void
+ */
+function videoplaylist_reset_gradebook(int $courseid): void {
+    global $DB;
+
+    $playlists = $DB->get_records('videoplaylist', ['course' => $courseid]);
+    foreach ($playlists as $playlist) {
+        videoplaylist_grade_item_update($playlist, 'reset');
+    }
 }
