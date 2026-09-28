@@ -24,8 +24,7 @@
 }}
 <div>
     <div class="d-flex justify-content-between align-items-center mb-3"><h2>{{#str}}
-        reporttitle, videoplaylist{{/str}} — {{name}}</h2><a class="btn btn-secondary" href="{{{backurl}}}">{{#str}}
-        back, videoplaylist{{/str}}</a></div>
+        reporttitle, videoplaylist{{/str}} — {{name}}</h2><a class="btn btn-secondary" href="{{{backurl}}}">{{#str}}back{{/str}}</a></div>
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead>
@@ -38,7 +37,7 @@
             <tbody>
             {{#students}}
                 <tr>
-                    <td>{{fullname}}<br><small>{{email}}</small></td>{{#videos}}
+                    <td>{{fullname}}{{#identity}}<br><small>{{label}}: {{value}}</small>{{/identity}}</td>{{#videos}}
                     <td>{{percent}}% {{#completed}}✓{{/completed}}</td>{{/videos}}
                     <td><strong>{{overall}}%</strong></td>
                 </tr>{{/students}}
