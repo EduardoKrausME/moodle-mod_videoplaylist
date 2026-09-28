@@ -115,6 +115,8 @@ $event = \mod_videoplaylist\event\course_module_viewed::create(['objectid' => $p
 $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('course_modules', $cm);
 $event->trigger();
+$completion = new completion_info($course);
+$completion->set_module_viewed($cm);
 echo $OUTPUT->header();
 echo $OUTPUT->render_from_template('mod_videoplaylist/view', $data);
 echo $OUTPUT->footer();
