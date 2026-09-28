@@ -38,8 +38,11 @@ $PAGE->set_title(get_string('reporttitle', 'videoplaylist'));
 $PAGE->set_heading(format_string($course->fullname));
 $manager = new progress_manager();
 $videos = $manager->get_videos($playlist->id);
+$identityfields = \\core_user\\fields::get_identity_fields($context, false);
+$userfields = array_values(array_unique(array_merge(['id', 'firstname', 'lastname'], $identityfields)));
+$userfieldsql = implode(',', array_map(static fn(string $field): string => 'u.' . $field, $userfields));
 $students = get_enrolled_users($context, 'mod/videoplaylist:view', 0,
-    'u.id,u.firstname,u.lastname,u.email', 'u.lastname,u.firstname');
+    $userfieldsql, 'u.lastname,u.firstname');
 $rows = [];
 foreach ($students as $student) {
     if (has_capability('mod/videoplaylist:viewreport', $context, $student->id)) {
@@ -51,7 +54,17 @@ foreach ($students as $student) {
         $percent = $progress ? (float)$progress->percent : 0;
         $cells[] = ['percent' => round($percent, 2), 'completed' => $percent >= (float)$video->minpercent];
     }
-    $rows[] = ['fullname' => fullname($student), 'email' => $student->email, 'videos' => $cells,
+    $identity = [];
+    foreach ($identityfields as $field) {
+        if (!isset($student->{$field}) || $student->{$field} === '') {
+            continue;
+        }
+        $identity[] = [
+            'label' => \\core_user\\fields::get_display_name($field),
+            'value' => format_string((string)$student->{$field}),
+        ];
+    }
+    $rows[] = ['fullname' => fullname($student), 'identity' => $identity, 'videos' => $cells,
         'overall' => $manager->get_overall_percent($playlist->id, $student->id)];
 }
 $data = [
