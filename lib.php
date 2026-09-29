@@ -24,6 +24,12 @@
 
 use mod_videoplaylist\progress_manager;
 
+/**
+ * Returns information about features supported by the activity module.
+ *
+ * @param string $feature The feature constant being queried.
+ * @return mixed True or false if the feature is supported, null if unknown.
+ */
 function videoplaylist_supports($feature) {
     switch ($feature) {
         case FEATURE_MOD_ARCHETYPE:
@@ -49,6 +55,13 @@ function videoplaylist_supports($feature) {
     }
 }
 
+/**
+ * Creates a new video playlist activity instance.
+ *
+ * @param stdClass $data Submitted activity data.
+ * @param mod_videoplaylist_mod_form|null $mform The activity form.
+ * @return int The new activity instance ID.
+ */
 function videoplaylist_add_instance(stdClass $data, ?mod_videoplaylist_mod_form $mform = null): int {
     global $DB;
     $data->timecreated = time();
@@ -59,6 +72,13 @@ function videoplaylist_add_instance(stdClass $data, ?mod_videoplaylist_mod_form 
     return $id;
 }
 
+/**
+ * Updates an existing video playlist activity instance.
+ *
+ * @param stdClass $data Submitted activity data.
+ * @param mod_videoplaylist_mod_form|null $mform The activity form.
+ * @return bool True on success.
+ */
 function videoplaylist_update_instance(stdClass $data, ?mod_videoplaylist_mod_form $mform = null): bool {
     global $DB;
     $data->id = $data->instance;
@@ -68,6 +88,12 @@ function videoplaylist_update_instance(stdClass $data, ?mod_videoplaylist_mod_fo
     return $result;
 }
 
+/**
+ * Deletes a video playlist activity instance and its related data.
+ *
+ * @param int $id The activity instance ID.
+ * @return bool True on success, false if the instance does not exist.
+ */
 function videoplaylist_delete_instance(int $id): bool {
     global $DB;
     $playlist = $DB->get_record('videoplaylist', ['id' => $id]);
@@ -89,6 +115,18 @@ function videoplaylist_delete_instance(int $id): bool {
     return true;
 }
 
+/**
+ * Serves files stored by the video playlist activity.
+ *
+ * @param stdClass $course The course record.
+ * @param stdClass $cm The course module record.
+ * @param context_module $context The module context.
+ * @param string $filearea The requested file area.
+ * @param array $args Path arguments.
+ * @param bool $forcedownload Whether the file should be downloaded.
+ * @param array $options Additional file serving options.
+ * @return bool False when the requested file cannot be served.
+ */
 function mod_videoplaylist_pluginfile($course, $cm, $context, string $filearea, array $args,
                                       bool $forcedownload, array $options = []): bool {
     global $DB;
@@ -111,10 +149,25 @@ function mod_videoplaylist_pluginfile($course, $cm, $context, string $filearea, 
     send_stored_file($file, 0, 0, $forcedownload, $options);
 }
 
+/**
+ * Returns the file areas used by the activity.
+ *
+ * @param stdClass $course The course record.
+ * @param stdClass $cm The course module record.
+ * @param context_module $context The module context.
+ * @return array The available file areas.
+ */
 function videoplaylist_get_file_areas($course, $cm, $context): array {
     return ['video' => get_string('videofile', 'videoplaylist')];
 }
 
+/**
+ * Creates or updates the grade item for a video playlist.
+ *
+ * @param stdClass $playlist The playlist record.
+ * @param array|null $grades Optional grades to update.
+ * @return int Grade update status.
+ */
 function videoplaylist_grade_item_update(stdClass $playlist, ?array $grades = null): int {
     global $CFG;
     require_once($CFG->libdir . '/gradelib.php');
@@ -127,12 +180,26 @@ function videoplaylist_grade_item_update(stdClass $playlist, ?array $grades = nu
     return grade_update('mod/videoplaylist', $playlist->course, 'mod', 'videoplaylist', $playlist->id, 0, $grades, $item);
 }
 
+/**
+ * Deletes the grade item for a video playlist.
+ *
+ * @param stdClass $playlist The playlist record.
+ * @return int Grade update status.
+ */
 function videoplaylist_grade_item_delete(stdClass $playlist): int {
     global $CFG;
     require_once($CFG->libdir . '/gradelib.php');
     return grade_update('mod/videoplaylist', $playlist->course, 'mod', 'videoplaylist', $playlist->id, 0, null, ['deleted' => 1]);
 }
 
+/**
+ * Updates grades from learner playlist progress.
+ *
+ * @param stdClass $playlist The playlist record.
+ * @param int $userid Optional user ID. Zero updates all users with progress.
+ * @param bool $nullifnone Whether to send a null grade when the user has no progress.
+ * @return void
+ */
 function videoplaylist_update_grades(stdClass $playlist, int $userid = 0, bool $nullifnone = true): void {
     global $DB;
     $manager = new progress_manager();
@@ -152,6 +219,12 @@ function videoplaylist_update_grades(stdClass $playlist, int $userid = 0, bool $
     videoplaylist_grade_item_update($playlist, $grades);
 }
 
+/**
+ * Returns cached course module information for the activity.
+ *
+ * @param stdClass $cm The course module record.
+ * @return cached_cm_info|null Course module information, or null when the activity is missing.
+ */
 function videoplaylist_get_coursemodule_info(stdClass $cm): cached_cm_info|null {
     global $DB;
     $playlist = $DB->get_record('videoplaylist', ['id' => $cm->instance], 'id,name,intro,introformat,completionpercent');
@@ -169,6 +242,12 @@ function videoplaylist_get_coursemodule_info(stdClass $cm): cached_cm_info|null 
     return $info;
 }
 
+/**
+ * Returns descriptions of the active custom completion rules.
+ *
+ * @param cached_cm_info $cm Cached course module information.
+ * @return array Active completion rule descriptions.
+ */
 function videoplaylist_get_completion_active_rule_descriptions(cached_cm_info $cm): array {
     if ((int)$cm->completion !== COMPLETION_TRACKING_AUTOMATIC ||
         empty($cm->customdata['customcompletionrules']['completionpercent'])) {
@@ -178,6 +257,15 @@ function videoplaylist_get_completion_active_rule_descriptions(cached_cm_info $c
         $cm->customdata['customcompletionrules']['completionpercent'])];
 }
 
+/**
+ * Returns the completion state for a learner.
+ *
+ * @param stdClass $course The course record.
+ * @param stdClass $cm The course module record.
+ * @param int $userid The user ID.
+ * @param bool $type Expected completion state.
+ * @return bool True when the configured completion percentage has been reached.
+ */
 function videoplaylist_get_completion_state($course, $cm, int $userid, bool $type): bool {
     global $DB;
     $playlist = $DB->get_record('videoplaylist', ['id' => $cm->instance], '*', MUST_EXIST);
