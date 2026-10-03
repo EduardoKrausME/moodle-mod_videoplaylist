@@ -23,7 +23,7 @@
  */
 
 namespace mod_videoplaylist\form;
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 global $CFG;
 require_once("{$CFG->libdir}/formslib.php");
 
