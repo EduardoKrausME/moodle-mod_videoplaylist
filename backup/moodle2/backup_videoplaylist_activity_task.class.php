@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once(__DIR__ . '/backup_videoplaylist_stepslib.php');
+
 /**
  * Class backup_videoplaylist_activity_task.
  */
