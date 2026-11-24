@@ -38,8 +38,7 @@ $PAGE->set_title($video ? get_string('editvideo', 'videoplaylist') : get_string(
 $PAGE->set_heading(format_string($course->fullname));
 // Without an explicit action, moodleform posts to the current URL stripped of its query string,
 // so the required 'id' is lost and saving fails with missingparam.
-$form = new \mod_videoplaylist\form\video_form(
-    new moodle_url('/mod/videoplaylist/video.php', ['id' => $cm->id, 'videoid' => $videoid]));
+$form = new \mod_videoplaylist\form\video_form($PAGE->url);
 $draftid = file_get_submitted_draft_itemid('videofile');
 if ($video) {
     file_prepare_draft_area($draftid, $context->id, 'mod_videoplaylist', 'video', $video->id, ['subdirs' => 0, 'maxfiles' => 1]);
